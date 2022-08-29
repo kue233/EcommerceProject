@@ -350,7 +350,74 @@ router.get("/admin", async (req, resp) => {
     resp.status(200).json(orders);
 })
 
+// cart add buttons
+router.post("/cartAdd", async (req, resp) => {
+    const { productId, currUser } = req.body;
+    // console.log(productId)
+    let userCart = await User.findOne({ _id: currUser });
+    userCart = userCart["cartItems"];
+    // console.log(userCart)
 
+    userCart.forEach(prod => {
+        if (prod["id"] == productId) {
+            prod["ammount"] = Number(prod["ammount"]) + 1;
+        }
+    });
+
+    console.log(userCart)
+    try {
+        await User.updateOne(
+            { _id: currUser },
+            {
+                $set: {
+                    cartItems: userCart,
+                }
+            }
+        )
+
+        // console.log(result)
+    } catch (error) {
+        console.log(error)
+    }
+
+
+    resp.status(200)
+})
+
+
+// cart delete buttons
+router.post("/cartDelt", async (req, resp) => {
+    const { productId, currUser } = req.body;
+    // console.log(productId)
+    let userCart = await User.findOne({ _id: currUser });
+    userCart = userCart["cartItems"];
+    // console.log(userCart)
+
+    userCart.forEach(prod => {
+        if (prod["id"] == productId) {
+            prod["ammount"] = Number(prod["ammount"]) - 1;
+        }
+    });
+
+    console.log(userCart)
+    try {
+        await User.updateOne(
+            { _id: currUser },
+            {
+                $set: {
+                    cartItems: userCart,
+                }
+            }
+        )
+
+        // console.log(result)
+    } catch (error) {
+        console.log(error)
+    }
+
+
+    resp.status(200)
+})
 
 
 

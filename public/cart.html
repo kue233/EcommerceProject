@@ -116,7 +116,8 @@
     }
     $(document).ready(async () => {
         // check if login, show bars
-        const jwt_cookie = getCookie("JWT")
+        const jwt_cookie = getCookie("JWT");
+        var prods = [];
         console.log(jwt_cookie);
         if (jwt_cookie) {
             // if login
@@ -136,23 +137,28 @@
             }),
             contentType: "application/json; charset=utf-8",
             success: function (res) {
+                prods = res;
                 console.log(res);
                 let node = "";
+                let productId = 0;
                 // element[0] is info of product, element[1] is ammount of product of this user
                 res.forEach(element => {
-                    console.log(element)
+                    // console.log(element)
 
                     node +=
-                        `<div>
+                        `<div >
                             <h2>${element[0]["title"]}</h2>
                             <h2>price: ${element[0]["price"]}</h2>
                             <h2>brand: ${element[0]["brand"]}</h2>
                             <h2>category: ${element[0]["category"]}</h2>
                             <h2>description: ${element[0]["description"]}</h2>
                             <img src=${element[0]["thumbnail"]}></img>   
-                            <h2>ammount: ${element[1]}</h2>    
+                            <h2>ammount: ${element[1]}</h2>  
+                            <button class="${productId}p">add</button>  
+                            <button class="${productId}d">delete</button>  
                             <hr>
                         </div>`
+                    productId += 1;
                 });
 
                 document.getElementById("main").insertAdjacentHTML("beforeend", node);
@@ -180,8 +186,70 @@
                     alert("you have successfully checked out!")
                 }
             })
-            alert("you have successfully checked out!")
+            alert("you have successfully checked out!");
+            window.location.reload();
         })
+
+
+        setTimeout(() => {
+            $("button[class$='p']").on("click", async (e) => {
+                // console.log(e.target.className);
+                // console.log(e.target.className.charAt(0));
+                const indexOfProds = Number(e.target.className.charAt(0));
+                console.log(e.target.parentNode.children[6]);
+                let temp = e.target.parentNode.children[6].innerHTML
+                e.target.parentNode.children[6].innerHTML = "ammount: " +
+                    (Number(temp.charAt(temp.length - 1)) + 1);// UI increment
+                $.ajax({
+                    url: `${host}/cartAdd`,
+                    type: "POST",
+                    data: JSON.stringify({
+                        productId: prods[indexOfProds][0]["_id"],
+                        currUser: await getCookie("currUser")
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (res) {
+                        // alert("you have successfully add")
+                    }
+                })
+
+
+
+
+            })
+
+
+            $("button[class$='d']").on("click", async (e) => {
+                // console.log(e.target.className);
+                // console.log(e.target.className.charAt(0));
+                const indexOfProds = Number(e.target.className.charAt(0));
+                console.log(e.target.parentNode.children[6]);
+                let temp = e.target.parentNode.children[6].innerHTML
+
+                if (Number(temp.charAt(temp.length - 1)) <= 0) {
+                    alert("you cannot delete more of this Item");
+                    return;
+                }
+                e.target.parentNode.children[6].innerHTML = "ammount: " +
+                    (Number(temp.charAt(temp.length - 1)) - 1);// UI increment
+                $.ajax({
+                    url: `${host}/cartDelt`,
+                    type: "POST",
+                    data: JSON.stringify({
+                        productId: prods[indexOfProds][0]["_id"],
+                        currUser: await getCookie("currUser")
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (res) {
+                        // alert("you have successfully add")
+                    }
+                })
+
+
+
+
+            })
+        }, 300);
 
     })
 
