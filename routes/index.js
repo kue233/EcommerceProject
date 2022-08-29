@@ -146,34 +146,52 @@ router.post("/updateCart", async (req, resp) => {
     const user = await User.find({ _id: currUser });
     // console.log(user[0]["cartItems"][0]["ammount"]); // find the current user
     var userCartItems = user[0]["cartItems"];
+    console.log(userCartItems);
+    let resArr = [];
 
     if (userCartItems.filter(i => i["id"] === prodId).length > 0) { // if user's cart contains this item
         console.log("caintaing!------------------------")
         for (let i = 0; i < userCartItems.length; i++) {
             if (user[0]["cartItems"][i]["id"] === prodId) {
-                console.log("find item!------------------------")
-                const tempNum = Number(user[0]["cartItems"][i]["ammount"]) + 1;
-                const temp = { id: prodId, ammount: tempNum };
-                // userCartItems.push(temp);
-                userCartItems[i]["ammount"] = tempNum;
-                console.log(userCartItems[i]["ammount"])
-                break;
+                user[0]["cartItems"][i]["ammount"] = Number(user[0]["cartItems"][i]["ammount"]) + 1;
             }
-
+            resArr.push(user[0]["cartItems"][i]);
         }
-        // const amt = 
-    } else { // if not, create this item with 1 ammount in user's cart
-        console.log("not caintaing!------------------------")
-        const temp = { id: prodId, ammount: 1 };
-        userCartItems.push(temp);
 
+    } else {
+        let obj = { id: prodId, ammount: 1 };
+        resArr = userCartItems;
+        resArr.push(obj);
     }
+
+
+    // if (userCartItems.filter(i => i["id"] === prodId).length > 0) { // if user's cart contains this item
+    //     console.log("caintaing!------------------------")
+    //     for (let i = 0; i < userCartItems.length; i++) {
+    //         if (user[0]["cartItems"][i]["id"] === prodId) {
+    //             console.log("find item!------------------------")
+    //             const tempNum = Number(user[0]["cartItems"][i]["ammount"]) + 1;
+    //             const temp = { id: prodId, ammount: tempNum };
+    //             // userCartItems.push(temp);
+    //             userCartItems[i]["ammount"] = tempNum;
+    //             console.log(userCartItems[i]["ammount"])
+    //             break;
+    //         }
+
+    //     }
+    //     // const amt = 
+    // } else { // if not, create this item with 1 ammount in user's cart
+    //     console.log("not caintaing!------------------------")
+    //     const temp = { id: prodId, ammount: 1 };
+    //     userCartItems.push(temp);
+
+    // }
     try {
         await User.updateOne(
             { _id: user[0]["_id"] },
             {
                 $set: {
-                    cartItems: userCartItems
+                    cartItems: resArr
                 }
             }
         )
@@ -182,8 +200,6 @@ router.post("/updateCart", async (req, resp) => {
     } catch (error) {
         console.log(error)
     }
-    // const filter = { username: "kue3" };
-    // const update = { cartItems: [prodId, 1] };
 
 
 
@@ -199,13 +215,10 @@ router.post("/cart", async (req, resp) => {
     user[0]["cartItems"].forEach(item => {
         itemIdArr.push(new mongoose.Types.ObjectId(item["id"]));
     });
-    // console.log(itemIdArr);
+    console.log(itemIdArr);
     const items = await Item.find({
         '_id': {
-            $in: [
-                new mongoose.Types.ObjectId("6308ed32d0990bf32140d712"),
-                new mongoose.Types.ObjectId("6308ed32d0990bf32140d714")
-            ]
+            $in: itemIdArr
         }
     });
     // console.log(items);
