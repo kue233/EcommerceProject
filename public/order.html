@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Page</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        referrerpolicy="no-referrer"></script>
+    <script src="./javascripts/helper.js"></script>
+    <style>
+        #searchBar {
+            overflow: hidden;
+            background-color: gray;
+
+        }
+
+        #searchBar a {
+            float: left;
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 20px;
+            text-decoration: none;
+            font-size: 17px;
+            background-color: antiquewhite;
+        }
+
+
+        #searchBar #rightBar {
+            float: right;
+            padding: 6px 10px;
+            font-size: 17px;
+            border: none;
+        }
+
+        #searchBar #rightBar a {
+            padding: 6px 10px;
+            margin: 8px;
+            background: #ddd;
+            border: none;
+        }
+
+        #brandItems1 {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+
+        #brandItem1 {
+            display: flex;
+            flex-direction: column;
+            padding: 3px;
+            text-decoration: none;
+            background-color: #fff;
+            color: #009;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div id="searchBar">
+        <a href="./homePage.html">home</a>
+        <div id="rightBar">
+            <div id="loginSec">
+                <a href="./cart.html">cart</a>
+                <a href="./order.html">my order</a>
+                <a onclick="logout();">log out</a>
+            </div>
+            <div id="notLoginSec">
+                <a href="./login.html">sign up</a>
+                <a href="./login.html">log in</a>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <div id="main"></div>
+    <br>
+    <br>
+    <br>
+    <hr>
+
+</body>
+
+<script>
+    const host = "http://localhost:3000";
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    $(document).ready(async () => {
+        // check if login, show bars
+        const jwt_cookie = getCookie("JWT")
+        console.log(jwt_cookie);
+        if (jwt_cookie) {
+            // if login
+            $("#loginSec").show();
+            $("#notLoginSec").hide();
+        } else {
+            // if not login
+            $("#loginSec").hide();
+            $("#notLoginSec").show();
+        }
+
+        $.ajax({
+            url: `${host}/order`,
+            type: "POST",
+            data: JSON.stringify({
+                currUser: await getCookie("currUser")
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (res) {
+                console.log(res);
+
+                var node = ``;
+                for (let i = 0; i < res.length; i++) {
+                    for (let j = 0; j < res[i]["products"].length; j++) {
+                        node += `
+                        <h2>title: ${res[i]["products"][j]["item"]["title"]}</h2>
+                        <h2>ammount: ${res[i]["products"][j]["ammount"]}</h2>
+                        `;
+                    }
+
+                    node += `<br><h2>status: ${res[i]["status"]}</h2><hr>`;
+                }
+
+                document.getElementById("main").insertAdjacentHTML("beforeend", node);
+
+            }
+
+
+        })
+
+    })
+
+
+
+
+
+</script>
+
+</html>

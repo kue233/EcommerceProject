@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        referrerpolicy="no-referrer"></script>
+    <script src="./javascripts/helper.js"></script>
+    <style>
+        #searchBar {
+            overflow: hidden;
+            background-color: gray;
+
+        }
+
+        #searchBar a {
+            float: left;
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 20px;
+            text-decoration: none;
+            font-size: 17px;
+            background-color: antiquewhite;
+        }
+
+
+        #searchBar #rightBar {
+            float: right;
+            padding: 6px 10px;
+            font-size: 17px;
+            border: none;
+        }
+
+        #searchBar #rightBar a {
+            padding: 6px 10px;
+            margin: 8px;
+            background: #ddd;
+            border: none;
+        }
+
+        #brandItems1 {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+
+        #brandItem1 {
+            display: flex;
+            flex-direction: column;
+            padding: 3px;
+            text-decoration: none;
+            background-color: #fff;
+            color: #009;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div id="searchBar">
+        <a href="./homePage.html">home</a>
+        <div id="rightBar">
+            <div id="loginSec">
+                <a href="./cart.html">cart</a>
+                <a href="./order.html">my order</a>
+                <a onclick="logout();">log out</a>
+            </div>
+            <div id="notLoginSec">
+                <a href="./login.html">sign up</a>
+                <a href="./login.html">log in</a>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div id="main">
+
+    </div>
+</body>
+
+<script>
+    const host = "http://localhost:3000";
+    var main = document.getElementById("main");
+    var dataArr = [];
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+
+    $(document).ready(() => {
+        // check if login, show bars
+        const jwt_cookie = getCookie("JWT")
+        console.log(jwt_cookie);
+        if (jwt_cookie) {
+            // if login
+            $("#loginSec").show();
+            $("#notLoginSec").hide();
+        } else {
+            // if not login
+            $("#loginSec").hide();
+            $("#notLoginSec").show();
+        }
+
+        fetch(`${host}/getData`)
+            .then(resp => resp.json())
+            .then(data => {
+                // console.log(data);
+                dataArr = data;
+                let index = 0;
+                data.forEach(datum => {
+
+                    const node = `
+                        <div id="brandItems">
+                            <br><br>
+                            <div id="brandItems1">
+                                <h2>${datum[0]["brand"]}</h2>
+                                <button id="prevBtn" class="${index}">previous</button>
+                                <div id="brandItem1">
+                                    <p>${datum[0]["title"]}</p>
+                                    <p>$${datum[0]["price"]}</p>
+                                    <img class="thb${index}" src="${datum[0]["thumbnail"]}"></img>
+                                    <p>1</P>
+                                </div>
+                                <button id="nextBtn" class="${index}">next</button>
+                            </div>
+                        </div>
+                    `;
+
+                    main.insertAdjacentHTML("beforeend", node);
+
+                    index++;
+                });
+            }).then(
+
+        )
+            .catch(err => console.log(err))
+
+
+        // $("#cart").on("click", async (e) => {
+        //     $.ajax({
+        //         url: `${host}/cart`,
+        //         type: "GET"
+        //     })
+        // })
+
+        setTimeout(() => {
+            $("[id=nextBtn]").on("click", async (e) => {
+                // console.log("click")
+
+                // dataArr[arrIndex][brandIndex]
+                let arrIndex = Number(e.target.className);
+                let brandIndex = Number(e.target.parentNode.children[2].children[3].innerHTML) - 1;
+                // console.log(e.target.className);
+
+                console.log(`arrIndex: ${arrIndex}, brandIndex: ${brandIndex}`);
+                // console.log(e.target.parentNode.children[2].children[3].innerHTML);
+                // console.log(dataArr[arrIndex][2]);
+                if (dataArr[arrIndex][brandIndex + 1]) {
+                    let i = Number(e.target.parentNode.children[2].children[3].innerHTML);
+                    console.log(dataArr[arrIndex][i]);
+                    e.target.parentNode.children[2].children[3].innerHTML = await brandIndex + 2; // index +1
+                    // console.log(e.target.parentNode.children[2].children);
+                    e.target.parentNode.children[2].children[0].innerHTML = await dataArr[arrIndex][i]["title"];
+                    e.target.parentNode.children[2].children[1].innerHTML = await "$" + dataArr[arrIndex][i]["price"];
+                    e.target.parentNode.children[2].children[2].src = await dataArr[arrIndex][i]["thumbnail"];
+                } else {
+                    alert("no more items for this brand")
+                }
+            })
+            $("[id=prevBtn]").on("click", async (e) => {
+                // console.log("click")
+
+                // dataArr[arrIndex][brandIndex]
+                let arrIndex = Number(e.target.className);
+                let brandIndex = Number(e.target.parentNode.children[2].children[3].innerHTML);
+                // console.log(e.target.className);
+
+                console.log(`arrIndex: ${arrIndex}, brandIndex: ${brandIndex}`);
+                // console.log(e.target.parentNode.children[2].children[3].innerHTML);
+                // console.log(dataArr[arrIndex][2]);
+                if (dataArr[arrIndex][brandIndex - 1]) {
+                    let i = Number(e.target.parentNode.children[2].children[3].innerHTML) - 1;
+                    console.log(dataArr[arrIndex][i]);
+                    e.target.parentNode.children[2].children[3].innerHTML = await brandIndex - 1; // index +1
+                    // console.log(e.target.parentNode.children[2].children);
+                    e.target.parentNode.children[2].children[0].innerHTML = await dataArr[arrIndex][i]["title"];
+                    e.target.parentNode.children[2].children[1].innerHTML = await "$" + dataArr[arrIndex][i]["price"];
+                    e.target.parentNode.children[2].children[2].src = await dataArr[arrIndex][i]["thumbnail"];
+                } else {
+                    alert("it is the first procudt for this brand")
+                }
+            });
+
+            $("[class^=thb]").on("click", (e) => {
+                // console.log("click img")
+                let index = e.target.className.slice(-1);
+                // console.log(index);
+                let a = e.target.parentNode.parentNode.children[1].className;
+                a = Number(a);
+                let b = e.target.parentNode.children[3].innerHTML;
+                b = Number(b) - 1;
+                let itemData = dataArr[a][b];
+                // console.log(itemData._id);
+                // window.location.href = `${host}/product`;
+                $.ajax({
+                    url: `${host}/product`,
+                    method: "POST",
+                    data: JSON.stringify({
+                        product: itemData
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: (res) => {
+                        window.localStorage.setItem("tempProdId", itemData._id);
+                        window.location.href = `${host}/productPage.html`;
+                    }
+                })
+            })
+        }, 400);
+
+    }
+
+    )
+
+</script>
+
+</html>

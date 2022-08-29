@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        referrerpolicy="no-referrer"></script>
+    <script src="./javascripts/helper.js"></script>
+    <title>Login and register page</title>
+    <style>
+        #searchBar {
+            overflow: hidden;
+            background-color: gray;
+
+        }
+
+        #searchBar a {
+            float: left;
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 20px;
+            text-decoration: none;
+            font-size: 17px;
+            background-color: antiquewhite;
+        }
+
+
+        #searchBar #rightBar {
+            float: right;
+            padding: 6px 10px;
+            font-size: 17px;
+            border: none;
+        }
+
+        #searchBar #rightBar a {
+            padding: 6px 10px;
+            margin: 8px;
+            background: #ddd;
+            border: none;
+        }
+
+        #brandItems1 {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="searchBar">
+        <a href="./homePage.html">home</a>
+    </div>
+    <br>
+    <form>
+        <h1>register</h1>
+        <label for="registerUsername">username:</label>
+        <input id="rName" type="text" placeholder="username" />
+        <br><br>
+        <label for="registerEmail">email:</label>
+        <input id="rEmail" type="text" placeholder="email" />
+        <br><br>
+        <label for="registerPassword">password:</label>
+        <input id="rPassword" type="password" placeholder="password" />
+        <br><br>
+        <button id="registerBtn">register</button>
+        <br><br>
+    </form>
+
+    <br>
+    <br>
+    <br>
+
+    <form>
+        <h1>login</h1>
+        <p>to login as admin: </p>
+        <p>name: admin, email: admin@gmail.com, psw: admin</p>
+        <label for="loginUsername">username:</label>
+        <input id="lName" type="text" placeholder="username" />
+        <br><br>
+        <label for="loginEmail">email:</label>
+        <input id="lEmail" type="text" placeholder="email" />
+        <br><br>
+        <label for="loginPassword">password:</label>
+        <input id="lPassword" type="password" placeholder="password" />
+        <br><br>
+        <button id="loginBtn">log in</button>
+        <br><br>
+    </form>
+
+    <br>
+    <br>
+</body>
+
+<script>
+    const host = "http://localhost:3000";
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    const jwt_cookie = getCookie("JWT")
+    console.log(jwt_cookie);
+    if (jwt_cookie) {
+        // if login
+        $("#loginSec").show();
+        $("#notLoginSec").hide();
+    } else {
+        // if not login
+        $("#loginSec").hide();
+        $("#notLoginSec").show();
+    }
+
+    $("#q").on("click", () => {
+        window.location.href = `${host}/homePage.html`
+    })
+
+    $("#registerBtn").on("click", async (e) => {
+        e.preventDefault();
+        $.ajax({
+            url: `${host}/register`,
+            type: "POST",
+            data: JSON.stringify({
+                username: $("#rName").val(),
+                email: $("#rEmail").val(),
+                password: $("#rPassword").val()
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (res) {
+                if (res == "ef")
+                    alert("email format is not matching")
+                else if (res == true) {
+                    alert("register successfully");
+                    $("#rName").val("");
+                    $("#rEmail").val("");
+                    $("#rPassword").val("");
+                }
+                else if (res == false)
+                    alert("register fail! user exists")
+            },
+            error: function (e) {
+                console.log("login html post error\n");
+                console.log(e);
+            }
+        })
+    })
+
+    $("#loginBtn").on("click", async (e) => {
+        e.preventDefault();
+        if (
+            $("#lName").val() == "admin" &&
+            $("#lName").val() == "admin@gmail" &&
+            $("#lName").val() == "admin"
+        ) {
+
+        }
+        $.ajax({
+            url: `${host}/login`,
+            type: "POST",
+            data: JSON.stringify({
+                username: $("#lName").val(),
+                email: $("#lEmail").val(),
+                password: $("#lPassword").val(),
+                jwt_key: await getCookie("JWT")
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (res) {
+                // console.log(res);
+                document.cookie = "JWT" + "=" + res[1] + ";" + "currUser" + "=" + res[2];
+                document.cookie = "currUser" + "=" + res[2];
+                if (res[0]) {
+                    alert("you are login as admin");
+                    window.location.href = "http://localhost:3000/adminPage";
+                }
+                else {
+                    alert("you are login successfully");;
+                    window.location.href = "http://localhost:3000/homePage";
+                }
+
+            },
+            error: function (e) {
+                console.log("login html post error\n");
+                console.log(e);
+            }
+        })
+    })
+</script>
+
+</html>

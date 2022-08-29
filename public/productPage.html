@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>product page</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        referrerpolicy="no-referrer"></script>
+    <script src="./javascripts/helper.js"></script>
+    <style>
+        #searchBar {
+            overflow: hidden;
+            background-color: gray;
+
+        }
+
+        #searchBar a {
+            float: left;
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 20px;
+            text-decoration: none;
+            font-size: 17px;
+            background-color: antiquewhite;
+        }
+
+
+        #searchBar #rightBar {
+            float: right;
+            padding: 6px 10px;
+            font-size: 17px;
+            border: none;
+        }
+
+        #searchBar #rightBar a {
+            padding: 6px 10px;
+            margin: 8px;
+            background: #ddd;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="searchBar">
+        <a href="./homePage.html">home</a>
+        <div id="rightBar">
+            <div id="loginSec">
+                <a href="./cart.html">cart</a>
+                <a href="./order.html">my order</a>
+                <a onclick="logout();">log out</a>
+            </div>
+            <div id="notLoginSec">
+                <a href="./login.html">sign up</a>
+                <a href="./login.html">log in</a>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+
+    <div id="main">
+
+    </div>
+</body>
+
+<script>
+    const host = "http://localhost:3000";
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    $(document).ready(() => {
+        // check if login, show bars
+        const jwt_cookie = getCookie("JWT")
+        console.log(jwt_cookie);
+        if (jwt_cookie) {
+            // if login
+            $("#loginSec").show();
+            $("#notLoginSec").hide();
+        } else {
+            // if not login
+            $("#loginSec").hide();
+            $("#notLoginSec").show();
+        }
+
+        console.log(window.localStorage.getItem("tempProdId"));
+        const prodId = window.localStorage.getItem("tempProdId");
+        //
+        $.ajax({
+            url: `${host}/getData/${prodId}`,
+            method: "GET",
+            success: (res) => {
+                console.log(res[0]);
+                const data = res[0];
+
+                var commentNode = ``;
+                data["comment"].forEach(element => {
+                    commentNode += `<h3>${element}</h3>
+                    <hr>`;
+                });
+
+                const node = `
+                        <div id="brandItems">
+                            <br><br>
+                            <div id="brandItems1">
+                                <h2>${data["title"]}</h2>
+                                <h2>price: ${data["price"]}</h2>
+                                <h2>brand: ${data["brand"]}</h2>
+                                <h2>category: ${data["category"]}</h2>
+                                <h2>description: ${data["description"]}</h2>
+                                <img src=${data["thumbnail"]}></img>
+                                
+                                <br>
+                                <label style="font-size:30px">review:</label>
+                                <h2>rating: ${data["rating"]}</h2>
+                                <h2>comments:</h2><hr>
+                                ${commentNode}
+                                <label>add rate (max 5):</label>
+                                <input type="range" id="range" name="vol" min="0" max="5">
+                                <label>add comment:</label>
+                                <textarea id="comment" rows="4" cols="50"></textarea>
+                                <button id="addCommentBtn">add</button>
+                                <br>
+                                <br>
+                                <br>
+                                <button id="addBtn" >add to cart</button>
+
+                            </div>
+                        </div>
+                    `;
+                document.getElementById("main").insertAdjacentHTML("beforeend", node);
+            }
+        })
+
+        setTimeout(() => {
+            $("#addBtn").on("click", async function (e) {
+                console.log(prodId);
+
+                $.ajax({
+                    url: `${host}/updateCart`,
+                    type: "POST",
+                    data: JSON.stringify({
+                        prodId: prodId,
+                        currUser: await getCookie("currUser")
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (res) {
+                        // console.log(res);
+
+                    },
+                    error: function (e) {
+                        console.log("login html post error\n");
+                        console.log(e);
+                    }
+
+                })
+
+            })
+
+            $("#addCommentBtn").on("click", async (e) => {
+                $.ajax({
+                    url: `${host}/addComment`,
+                    type: "POST",
+                    data: JSON.stringify({
+                        prodId: prodId,
+                        comment: await $("#comment").val(),
+                        rate: await $("#range").val()
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (res) {
+                        // console.log(res);
+                        $("#comment").val("");
+                        $("#range").val("");
+                        window.location.reload(); // refresh after add comment
+                    },
+                    error: function (e) {
+                        console.log("login html post error\n");
+                        console.log(e);
+                    }
+
+                })
+            })
+
+            if (jwt_cookie) {
+                // if login
+                $("#addBtn").show();
+            } else {
+                // if not login
+                $("#addBtn").hide();
+            }
+
+        }, 300);
+
+
+    })
+</script>
+
+</html>
