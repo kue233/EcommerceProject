@@ -116,19 +116,100 @@
                 console.log(res);
                 var node = ``;
                 res.forEach(elem => {
-                    node += `<h2>user name: ${elem["name"]}</h2>`
-                    elem["order"][0]["products"].forEach(element => {
-                        console.log(element)
-                        node += `<h2>product id: ${element["id"]}</h2>`
-                        node += `<h2>product ammount: ${element["ammount"]}</h2>`
-                    });
-                    node += `<h2>transaction status: ${elem["order"][0]["status"]}</h2><hr>`
+
+                    node += `<div><h2>user name: ${elem["name"]}</h2>`
+                    elem["order"].forEach((item) => {
+                        item["products"].forEach(element => {
+                            console.log(element)
+                            // console.log(element)
+                            node += `<h2>product id: ${element["id"]}</h2>`
+                            node += `<h2>product ammount: ${element["ammount"]}</h2>`
+                        });
+                        node += `<h2>transaction status: ${item["status"]}</h2>`;
+                        node += `<h2>transaction _id: ${item["_id"]}</h2>`;
+                        node += `
+                            <button class="approveBtn">approve</button>
+                            <button class="rejectBtn">reject</button>
+                            <br><br><br>
+                    `
+                    }
+
+                    )
+
+                    node += '</div><hr>';
                 });
 
                 document.getElementById("main").insertAdjacentHTML("beforeend", node);
             }
 
         })
+
+
+        setTimeout(() => {
+            $(".approveBtn").on("click", async (e) => {
+                // get trans id
+                let transId = "";
+                let thisTransNode = e.target.previousSibling.previousSibling.innerHTML;
+                transId = thisTransNode.split(":");
+                transId = transId[transId.length - 1].trim();
+                console.log(transId);
+                let username = e.target.parentNode.children[0].innerHTML;
+                username = username.split(":");
+                username = username[username.length - 1].trim();
+                console.log(username);
+
+                $.ajax({
+                    url: `${host}/adminApprove`,
+                    type: "POST",
+                    data: JSON.stringify({
+                        transId: transId,
+                        username: username
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (res) {
+                        if(res){
+                            alert("you have approved this transaction");
+                            window.location.reload();
+                        }
+                    }
+                })
+            })
+
+            // reject button
+            $(".rejectBtn").on("click", async (e) => {
+                // get trans id
+                let transId = "";
+                let thisTransNode = e.target.
+                    previousSibling.previousSibling.
+                    previousSibling.previousSibling.
+                    innerHTML;
+                transId = thisTransNode.split(":");
+                transId = transId[transId.length - 1].trim();
+                console.log(transId);
+                let username = e.target.parentNode.children[0].innerHTML;
+                username = username.split(":");
+                username = username[username.length - 1].trim();
+                console.log(username);
+
+                $.ajax({
+                    url: `${host}/adminReject`,
+                    type: "POST",
+                    data: JSON.stringify({
+                        transId: transId,
+                        username: username
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (res) {
+                        if(res){
+                            alert("you have rejected this transaction");
+                            window.location.reload();
+                        }
+                    }
+                })
+            })
+
+        }, 300);
+
 
     })
 

@@ -420,5 +420,81 @@ router.post("/cartDelt", async (req, resp) => {
 })
 
 
+// admin approve
+router.post("/adminApprove", async (req, resp) => {
+    const { username, transId } = req.body;
+    console.log(transId, username);
+    const user = await User.find({ username: username });
+    let userOrders = user[0]["orders"];
+    console.log(userOrders);
+    let resOrders = [];
+    // console.log(userOrders);
+    userOrders.forEach(order => {
+        if (order["id"] == new mongoose.Types.ObjectId(transId)) {
+            order["status"] = "Approved";
+        }
+        resOrders.push(order);
+
+    });
+    console.log(resOrders);
+
+    try {
+        await User.updateOne(
+            { username: username },
+            {
+                $set: {
+                    orders: resOrders,
+                }
+            }
+        )
+
+        // console.log(result)
+    } catch (error) {
+        console.log(error)
+    }
+
+
+    resp.status(200).send(true);
+})
+
+
+// admin reject
+router.post("/adminReject", async (req, resp) => {
+    const { username, transId } = req.body;
+    console.log(transId, username);
+    const user = await User.find({ username: username });
+    let userOrders = user[0]["orders"];
+    console.log(userOrders);
+    let resOrders = [];
+    // console.log(userOrders);
+    userOrders.forEach(order => {
+        if (order["id"] == new mongoose.Types.ObjectId(transId)) {
+            order["status"] = "Rejected";
+        }
+        resOrders.push(order);
+
+    });
+    console.log(resOrders);
+
+    try {
+        await User.updateOne(
+            { username: username },
+            {
+                $set: {
+                    orders: resOrders,
+                }
+            }
+        )
+
+        // console.log(result)
+    } catch (error) {
+        console.log(error)
+    }
+
+
+    resp.status(200).send(true);
+})
+
+
 
 module.exports = router;
